@@ -66,7 +66,7 @@ public class Find {
     }
 
     private String fixed(String s) {
-        return s.replaceAll("[\\ \\'\\!\\\"\\-\\\\\\+\\.\\^:,]","");
+        return s.replaceAll("[\\ \\/\\'\\!\\\"\\-\\\\\\+\\.\\^:,]","");
     }
 
     private long amount(Path path) {
