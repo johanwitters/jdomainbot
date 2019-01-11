@@ -15,10 +15,10 @@ Where: TLD the extension, e.g. .com
 mvn clean install
 
 ## Command line example
-```
-java com.johanw.jdomainbot.Find .com mylist.csv
 
-Example contents of mylist.csv
+Example contents of mylist.csv:
+
+```
 johan
 peter
 john
@@ -26,7 +26,11 @@ thissurelydoesntexistdoesit
 johny
 doesthisexist
 iwouldntknow
+```
 
+Output of running java com.johanw.jdomainbot.Find .com mylist.csv:
+
+```
 The output of the above is:
 Current path: /home/johan/Source/jdomainbot
 tld: .com
@@ -41,4 +45,5 @@ Done
 
 ## Intellij screenshots
 ![Run Configuration](img/runconfiguration.png)
+
 ![Environment](img/intellij.png)
