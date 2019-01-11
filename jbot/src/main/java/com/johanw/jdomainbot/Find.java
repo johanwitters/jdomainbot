@@ -13,7 +13,7 @@ public class Find {
 
     public static void main(String[] args) {
         if (args.length != 2) {
-            System.out.println("Usage: " + Find.class.getName() + " TLD fileWithWords");
+            System.out.println("Usage: java " + Find.class.getName() + " TLD fileWithWords");
             System.out.println("Where: TLD the extension, e.g. .com");
             System.out.println("       fileWithWords is the file containing domains to lookup");
             System.out.println("e.g. "  + Find.class.getName() + " .com mylist.csv");
