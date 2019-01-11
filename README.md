@@ -15,6 +15,7 @@ Where: TLD the extension, e.g. .com
 mvn clean install
 
 ## Command line example
+```
 java com.johanw.jdomainbot.Find .com mylist.csv
 
 Example contents of mylist.csv
@@ -36,7 +37,8 @@ Available domains:
   iwouldntknow.com
 
 Done
+```
 
-## Intellij screenshot
+## Intellij screenshots
 ![Run Configuration](img/runconfiguration.png)
 ![Environment](img/intellij.png)
