@@ -1,47 +1,112 @@
 package com.johanw.jdomainbot;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.SocketException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.stream.Stream;
 
+import me.tongfei.progressbar.ProgressBar;
+import me.tongfei.progressbar.ProgressBarBuilder;
+import me.tongfei.progressbar.ProgressBarStyle;
 import org.apache.commons.net.whois.WhoisClient;
 
 public class Find {
-
-    public static void main(String[] args) {
-        if (args.length != 2) {
-            System.out.println("Usage: java " + Find.class.getName() + " TLD fileWithWords");
-            System.out.println("Where: TLD the extension, e.g. .com");
-            System.out.println("       fileWithWords is the file containing domains to lookup");
-            System.out.println("e.g. "  + Find.class.getName() + " .com mylist.csv");
-            System.exit(-1);
-        }
-        Find obj = new Find();
-        String tld = args[0];
-        String fileName = args[1];
-        Path currentRelativePath = Paths.get("");
-        String s = currentRelativePath.toAbsolutePath().toString();
-        System.out.println("Current path: " + s);
-        System.out.println("tld: " + tld);
-        System.out.println("fileName: " + fileName);
-        obj.find(tld, fileName);
+    public static void exitWithUsage() {
+        System.out.println("Usage: java " + Find.class.getName() + " TLD fileWithWords outputFile [fix]");
+        System.out.println("Where: TLD the extension, e.g. .com");
+        System.out.println("       fileWithWords is the file containing domains to lookup");
+        System.out.println("       outputFile is the file to output the list of available domains");
+        System.out.println("       fix optional, will remove spaces and special characters from the words from your file");
+        System.out.println("e.g. "  + Find.class.getName() + " .com mylist.csv available.txt");
+        System.exit(-1);
     }
 
-    public void find(String tld, String fileName) {
+    public static void main(String[] args) {
+        if ((args.length != 3) && (args.length != 4)) {
+            exitWithUsage();
+        }
+        String tld = args[0];
+        String fileName = args[1];
+        String outputFile = args[2];
+        boolean fix = false;
+        if (args.length == 4) {
+            if (args[3].equals("fix")) {
+                fix = true;
+            } else {
+                exitWithUsage();
+            }
+        }
+
+        System.out.println("Current path: " + Paths.get("").toAbsolutePath().toString());
+        System.out.println("tld: " + tld);
+        System.out.println("fileName: " + fileName);
+        System.out.println("output fileName: " + outputFile);
+
+        File file = new File(outputFile);
+        file.delete();
+
+        Find obj = new Find(tld, fileName, outputFile, fix);
+        obj.run();
+    }
+    private String tld;
+    private Path fileName;
+    private Path outputFile;
+    private boolean fix;
+
+    public Find(String tld, String fileName, String outputFile, boolean fix) {
+        this.tld = tld;
+        this.fileName = Paths.get(fileName);
+        this.outputFile = Paths.get(outputFile);
+        this.fix = fix;
+    }
+
+    private String fixed(String s) {
+        return s.replaceAll("[\\ \\'\\!\\\"\\-\\\\\\+\\.\\^:,]","");
+    }
+
+    private long amount(Path path) {
+        Stream<String> lines = null;
+        try {
+            lines = Files.lines(path);
+        } catch (IOException e) {
+            System.out.println("io exception whilst reading " + path.getFileName());
+        }
+        return lines.count();
+    }
+
+    private void writeToFile(String domainName) {
+        try {
+            Files.write(outputFile, (domainName + "\r\n").getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+        } catch (IOException ex) {
+            ex.printStackTrace();;
+            System.out.println("io exception whilst writing to " + outputFile.getFileName());
+        }
+    }
+
+    public void run() {
         System.out.println();
         System.out.println("Available domains:");
-        Path path = Paths.get(fileName);
-        try (Stream<String> lines = Files.lines(path)) {
-            lines.forEach(s -> {
-                if (isAvailable(s + tld)) {
-                    System.out.println("  " + s + tld);
+        long rows = amount(fileName);
+        Stream<String> lines = null;
+        try {
+            ProgressBarBuilder pbb = new ProgressBarBuilder().setInitialMax(rows).showSpeed();
+
+            ProgressBar.wrap(Files.lines(fileName), pbb).forEach(s -> {
+                String domainName = s;
+                if (fix) {
+                    domainName = fixed(s);
+                }
+                if (isAvailable(domainName + tld)) {
+                    writeToFile(domainName + tld);
                 }
             });
         } catch (IOException ex) {
-            System.out.println("io exception whilst reading " + fileName);
+            System.out.println("io exception whilst reading " + fileName.getFileName());
         }
         System.out.println();
         System.out.println("Done");
