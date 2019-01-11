@@ -1,8 +1,12 @@
 # jdomainbot
 
-## Purpose
+## Summary
 
-Bulk search a list of domain names and check for their availability. List of domains is provided in a csv file you provide
+This tool allows you to bulk search a list of domain names and check for their availability. The list of domains is provided in a csv file you provide.
+You can find all sorts of word dictionaries by googling. I've tested this with a list of 450,000 words. This took about 4 hours to find the available domain names.
+The tool displays a command line progress bar, with estimated time left.
+The output is stored in a file, which you can open whilst the tool is running.
+Happy domain name hunting.
 
 ## How
 
