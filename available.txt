@@ -4,3 +4,5 @@ A&M.com
 A&P.com
 R&D.com
 AT&T.com
+IESG.com
+IT&T.com
