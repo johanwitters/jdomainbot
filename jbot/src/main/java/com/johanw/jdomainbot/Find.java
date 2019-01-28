@@ -16,12 +16,19 @@ import me.tongfei.progressbar.ProgressBarStyle;
 import org.apache.commons.net.whois.WhoisClient;
 
 public class Find {
+    enum WhatToDo {
+        Nothing,
+        Replace,
+        Exclude
+    }
+
     public static void exitWithUsage() {
-        System.out.println("Usage: java " + Find.class.getName() + " TLD fileWithWords outputFile [fix]");
+        System.out.println("Usage: java " + Find.class.getName() + " TLD fileWithWords outputFile [fix|excl]");
         System.out.println("Where: TLD the extension, e.g. .com");
         System.out.println("       fileWithWords is the file containing domains to lookup");
         System.out.println("       outputFile is the file to output the list of available domains");
         System.out.println("       fix optional, will remove spaces and special characters from the words from your file");
+        System.out.println("       excl optional, will remove those words with special characters");
         System.out.println("e.g. "  + Find.class.getName() + " .com mylist.csv available.txt");
         System.exit(-1);
     }
@@ -33,10 +40,12 @@ public class Find {
         String tld = args[0];
         String fileName = args[1];
         String outputFile = args[2];
-        boolean fix = false;
+        WhatToDo fix = WhatToDo.Nothing;
         if (args.length == 4) {
             if (args[3].equals("fix")) {
-                fix = true;
+                fix = WhatToDo.Replace;
+            } else if (args[3].equals("excl")) {
+                fix = WhatToDo.Exclude;
             } else {
                 exitWithUsage();
             }
@@ -56,13 +65,15 @@ public class Find {
     private String tld;
     private Path fileName;
     private Path outputFile;
-    private boolean fix;
+    private WhatToDo fix;
+    private int totalFound;
 
-    public Find(String tld, String fileName, String outputFile, boolean fix) {
+    public Find(String tld, String fileName, String outputFile, WhatToDo fix) {
         this.tld = tld;
         this.fileName = Paths.get(fileName);
         this.outputFile = Paths.get(outputFile);
         this.fix = fix;
+        this.totalFound = 0;
     }
 
     private String fixed(String s) {
@@ -81,6 +92,7 @@ public class Find {
 
     private void writeToFile(String domainName) {
         try {
+            totalFound++;
             Files.write(outputFile, (domainName + "\r\n").getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
         } catch (IOException ex) {
             ex.printStackTrace();;
@@ -96,19 +108,31 @@ public class Find {
         try {
             ProgressBarBuilder pbb = new ProgressBarBuilder().setInitialMax(rows).showSpeed();
 
+            boolean start = false;
             ProgressBar.wrap(Files.lines(fileName), pbb).forEach(s -> {
                 String domainName = s;
-                if (fix) {
-                    domainName = fixed(s);
-                }
-                if (isAvailable(domainName + tld)) {
-                    writeToFile(domainName + tld);
+                if (fix == WhatToDo.Exclude) {
+                    if (domainName.equals(fixed(domainName))) {
+                        if (isAvailable(domainName + tld)) {
+                            writeToFile(domainName + tld);
+                        }
+                    }
+                } else {
+                    if (fix == WhatToDo.Replace) {
+                        domainName = fixed(s);
+                    }
+                    if (isAvailable(domainName + tld)) {
+                        writeToFile(domainName + tld);
+                    }
                 }
             });
         } catch (IOException ex) {
             System.out.println("io exception whilst reading " + fileName.getFileName());
         }
         System.out.println();
+        System.out.println("Amount available: " + totalFound);
+        System.out.println("Amount verified: " + rows);
+        System.out.println("%: " + totalFound / rows * 100);
         System.out.println("Done");
 
     }
