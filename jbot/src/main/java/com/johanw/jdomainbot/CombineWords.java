@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 
 // TODO:
 public class CombineWords {
-    public static void main(String[] args) throws IOException {
+    public static void main1(String[] args) throws IOException {
         System.out.println("Current path: " + Paths.get("").toAbsolutePath().toString());
 
         List<Words> allWords = new ArrayList<>();
@@ -41,6 +41,32 @@ public class CombineWords {
         CombineWords obj = new CombineWords(tld, words, outputFile);
         obj.run();
     }
+
+    public static void main(String[] args) throws IOException {
+        System.out.println("Current path: " + Paths.get("").toAbsolutePath().toString());
+
+//        Words words1 = new WordsFromFile(MaxLength.from(11), "jbot/src/main/resources/wordlists-master/adjectives/colors.txt");
+//        Words words1 = new WordsFromDirectory(MaxLength.from(3), "jbot/src/main/resources/wordlists-master/adjectives");
+//        Words words1 = new WordsFromDirectory(MaxLength.from(3), "jbot/src/main/resources/wordlists-master/nouns");
+//        Words words1 = new WordsFromDirectory(MaxLength.from(3), "jbot/src/main/resources/wordlists-master/names");
+//        Words words1 = new WordsFromDirectory(MaxLength.from(3), "jbot/src/main/resources/wordlists-master/verbs");
+        Words words1 = new WordsFromDirectory(MaxLength.from(3), "jbot/src/main/resources/wordlists-master/names");
+        Words words2 = new SingleWord("ig");
+        Words words = CombinedWords.from(words1, words2);
+
+        String tld = ".com";
+        String outputFile = "combined.available.txt";
+        System.out.println("Current path: " + Paths.get("").toAbsolutePath().toString());
+        System.out.println("tld: " + tld);
+        System.out.println("output fileName: " + outputFile);
+
+        File file = new File(outputFile);
+        file.delete();
+
+        CombineWords obj = new CombineWords(tld, words, outputFile);
+        obj.run();
+    }
+
     private String tld;
     private Words words;
     private Path outputFile;

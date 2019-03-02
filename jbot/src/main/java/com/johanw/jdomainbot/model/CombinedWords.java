@@ -56,6 +56,10 @@ public class CombinedWords implements Words {
         return from(split.getFirst(), split.getRest());
     }
 
+    public static Words from(Words words1, Words words2) {
+        return new CombinedWords(words1, words2);
+    }
+
     public static Words from(Words words1, List<Words> otherWords) {
         if (otherWords.size() == 0) return words1;
         if (otherWords.size() == 1) return new CombinedWords(words1, otherWords.get(0));
